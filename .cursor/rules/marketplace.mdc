@@ -1,0 +1,61 @@
+---
+description: VTEX Marketplace Best Practices
+globs: 
+---
+
+---
+name: vtex-marketplace
+description: Expert guidance for VTEX Marketplace and Seller interactions. Covers Seller sync, Catalog mapping, Order flow (Marketplace/Seller), Marketplace APIs, and B2B logic. Trigger on any mention of "vtex marketplace", "seller sync", "external seller", "marketplace api", or "b2b commerce".
+---
+
+# VTEX Marketplace & Seller Management
+
+In VTEX, a **Marketplace** is an account that sells products from other accounts (**Sellers**). A single account can be both a Marketplace and a Seller.
+
+## 1. Seller Types
+- **White Label**: Integrated seamlessly; the customer doesn't know the product comes from another seller. The marketplace manages the customer experience.
+- **Third-Party (3P)**: The customer sees who the seller is (e.g., "Sold and shipped by Brand X").
+
+## 2. Integration Catalog Flow
+The Seller sends its catalog to the Marketplace via the **Seller Portal** or **Suggestions API**.
+- **Marketplace Logic**: The marketplace must approve suggestions (manual or automatic based on rules).
+- **Mapping**: Ensuring Seller's categories/brands match the Marketplace's tree.
+
+## 3. Order Flow (The "Split" Order)
+When a customer buys items from different sellers in one checkout:
+1. **Marketplace Order**: The customer sees one order.
+2. **Seller Orders**: VTEX automatically creates sub-orders for each seller.
+3. **Notification**: Marketplace notifies sellers via the `Order Hook` or `Broadcast`.
+
+## 4. Key APIs
+
+### Seller Management
+- `GET /api/seller-register/pvt/sellers`: List all sellers.
+- `PATCH /api/seller-register/pvt/sellers/{sellerId}`: Update seller configuration.
+
+### Inventory & Shipping (Marketplace Perspective)
+- **Fulfillment Simulation**: Marketplace calls the Seller in real-time during checkout to check stock and shipping price.
+- **SLA**: The marketplace chooses the best SLA (cheapest/fastest) from the seller's options.
+
+## 5. Implementation Best Practices
+
+### Order Hooks
+Always configure an `order hook` for the marketplace to track fulfillment status changes in the seller accounts:
+```json
+{
+  "url": "https://my-app.vtexcommercestable.com.br/api/order-hook",
+  "headers": { "X-VTEX-API-AppKey": "...", "X-VTEX-API-AppToken": "..." }
+}
+```
+
+### Marketplace Recalculation
+If the marketplace changes the price (fixed commission or markup), ensure that the `isUpdateable` flag is handled correctly in the fulfillment simulation.
+
+---
+
+## Common CLI Commands for Sellers
+
+```bash
+vtex seller list
+vtex seller add {sellerId}
+```

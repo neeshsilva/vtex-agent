@@ -1,4 +1,9 @@
 ---
+description: VTEX Io-development Best Practices
+globs: manifest.json, node/**/*, react/**/*, graphql/**/*
+---
+
+---
 name: vtex-io-development
 description: Expert guidance for building VTEX IO apps — Node.js backend services, React storefront components, GraphQL APIs, and app lifecycle management. Use this skill whenever the user is working with manifest.json, vtex CLI, VTEX IO workspaces, Node builder services, React builder components, GraphQL resolvers, VTEX IO policies, VBASE storage, app events, settingsSchema, or deploying/publishing VTEX IO apps. Trigger on any mention of "vtex io", "manifest.json", "vtex link", "vtex publish", "vtex deploy", node builder, react builder, graphql builder, IO app, IOClients, or when building backend integrations or custom admin pages on VTEX.
 ---
@@ -255,30 +260,36 @@ react/
 └── package.json
 ```
 
-### Component with CSS Handles and Context Hooks
-
+### 1. CSS Handles (Mandatory Styling)
+To ensure merchants can customize your app via the Site Editor's CSS, you MUST use CSS handles for all visible elements.
 ```tsx
-import React from 'react'
 import { useCssHandles } from 'vtex.css-handles'
-import { useProduct } from 'vtex.product-context'
+const CSS_HANDLES = ['container', 'title', 'button'] as const
 
-const CSS_HANDLES = ['wrapper', 'title', 'badge'] as const
-
-const ProductHighlight: React.FC = () => {
+const MyComponent = () => {
   const { handles } = useCssHandles(CSS_HANDLES)
-  const productContext = useProduct()
-
-  if (!productContext?.product) return null
-
-  return (
-    <div className={handles.wrapper}>
-      <h2 className={handles.title}>{productContext.product.productName}</h2>
-      <span className={handles.badge}>New</span>
-    </div>
-  )
+  return <div className={handles.container} />
 }
+```
 
-export default ProductHighlight
+### 2. Internationalization (`react-intl`)
+Never hardcode strings. Use `react-intl` and the `messages/` directory.
+- **Local file**: `messages/en.json`, `messages/pt.json`
+- **Usage**:
+```tsx
+import { FormattedMessage } from 'react-intl'
+<FormattedMessage id="store/my-app.title" />
+```
+
+### 3. Admin Styleguide
+If building an Admin page, you MUST use the `vtex.styleguide` library to maintain UI consistency.
+```tsx
+import { Layout, PageHeader, Button } from 'vtex.styleguide'
+const AdminPage = () => (
+  <Layout fullWidth pageHeader={<PageHeader title="App Config" />}>
+    <Button variation="primary">Save</Button>
+  </Layout>
+)
 ```
 
 ### Props Schema (`store/interfaces.json`)

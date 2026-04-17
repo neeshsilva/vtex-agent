@@ -7,7 +7,13 @@ description: Expert guidance for building high-performance VTEX storefronts with
 
 FastStore is VTEX's modern storefront toolkit. It's built on **Next.js + TypeScript + GraphQL** using a Jamstack architecture. It's the recommended choice for new VTEX storefronts because of its excellent Core Web Vitals performance.
 
-**Core principle:** Never edit `@faststore/core` directly. All your customizations live in `/src` via the override system.
+**Official Golden Path**: Never edit `@faststore/core` directly. All customizations live in `/src` via the override system. Every custom section must be exported in `src/components/index.tsx`.
+
+### 1. Framework Isolation (Crucial)
+To maintain long-term scalability and leverage FastStore WebOps optimizations, you MUST NOT use native Next.js components directly.
+- **❌ DO NOT USE**: `next/link`, `next/image`, `next/router`.
+- **✅ USE**: `Link`, `Image`, `useRouter` from `@faststore/ui` or `@faststore/core`.
+  - *Reason*: `@faststore/ui` components are optimized for VTEX WebOps and handle analytics/performance automatically.
 
 ---
 
@@ -58,9 +64,15 @@ yarn faststore  # FastStore CLI
 
 ---
 
-## Component Overrides
+## Component Overrides & Atomic Design
 
-FastStore sections are top-level layout components managed via Headless CMS (e.g., Hero, ProductDetails, ProductShelf). You can customize them without touching the core.
+FastStore follows an atomic design hierarchy:
+1. **Atoms (`@faststore/ui`)**: Low-level elements (Button, Input). Zero styling logic.
+2. **Molecules (`@faststore/components`)**: Composed UI (SearchInput, ProductCard).
+3. **Organisms/Sections (`@faststore/core`)**: Headless CMS-ready modules (Hero, Shelf).
+
+### The Override Rule
+Sections are top-level layout components managed via Headless CMS. You can customize them without touching the core.
 
 ### Pattern 1: Override Component Props
 
@@ -386,8 +398,13 @@ const MyProductCard = ({ product }: { product: any }) => {
     })
   }
 
-  return <div onClick={handleClick}>{product.name}</div>
-}
+### Required GA4 Parameters
+- `select_item`: `item_id`, `item_name`, `price`, `item_brand`.
+- `add_to_cart`: `value`, `currency`, `items[]`.
+- `view_item`: `value`, `currency`, `items[]`.
+
+> [!CAUTION]
+> If you create a custom `BuyButton` or `ProductCard` and forget to fire these events, the store's conversion tracking will be broken.
 ```
 
 ---
